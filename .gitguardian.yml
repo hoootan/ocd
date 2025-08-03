@@ -1,0 +1,27 @@
+# GitGuardian configuration file
+# https://docs.gitguardian.com/secrets-detection/detectors/generics/generic_password
+
+version: v1
+
+paths-ignore:
+  - "tests/**/*"
+  - "**/test_*.py"
+  - "**/*test*.py"
+
+# Ignore specific patterns that are clearly test/dummy values
+ignore:
+  - name: "Test keyring dummy values"
+    match: "dummy_test_value_12345"
+  - name: "OCD test service names"
+    match: "ocd_keyring_test"
+  - name: "Test connectivity keys"
+    match: "connectivity_test"
+
+# Ignore generic low-entropy test passwords
+detectors:
+  generic_password:
+    ignore:
+      - name: "Dummy test values"
+        regex: "dummy.*test.*value.*"
+      - name: "Test placeholder strings"
+        regex: "test_value|test_key|dummy_value"

@@ -38,15 +38,16 @@ class CredentialManager:
         try:
             import keyring
 
-            # Test keyring functionality
-            test_key = "ocd_test_key"
-            test_value = "test_value"
+            # Test keyring functionality with dummy values (not real secrets)
+            dummy_service = "ocd_keyring_test"
+            dummy_key = "connectivity_test"
+            dummy_value = "dummy_test_value_12345"
 
-            keyring.set_password("ocd_test", test_key, test_value)
-            retrieved = keyring.get_password("ocd_test", test_key)
-            keyring.delete_password("ocd_test", test_key)
+            keyring.set_password(dummy_service, dummy_key, dummy_value)
+            retrieved = keyring.get_password(dummy_service, dummy_key)
+            keyring.delete_password(dummy_service, dummy_key)
 
-            if retrieved == test_value:
+            if retrieved == dummy_value:
                 self.backend = "keyring"
                 logger.info("Using keyring backend", platform=self.platform)
             else:
