@@ -2,8 +2,8 @@
 Local Small Language Model Provider
 ===================================
 
-Provider implementation for local SLMs (Small Language Models) using
-transformers and local inference for privacy-focused processing.
+Provider implementation for specialized local SLMs (Small Language Models) 
+using individual task-specific models for privacy-focused processing.
 """
 
 import asyncio
@@ -15,27 +15,27 @@ import structlog
 from ocd.core.exceptions import OCDProviderError
 from ocd.core.types import ProviderConfig, ProviderType, TaskRequest, TaskResponse
 from ocd.providers.base import BaseProvider
+from ocd.models.manager import SLMModelManager
 
 logger = structlog.get_logger(__name__)
 
 
 class LocalSLMProvider(BaseProvider):
     """
-    Local Small Language Model provider.
+    Local Small Language Model provider using specialized models.
 
-    Uses lightweight transformer models for specific tasks:
-    - File classification
-    - Content extraction
-    - Pattern recognition
-    - Simple text generation
+    Features individual specialized SLMs for:
+    - File classification (DistilBERT, MobileBERT)
+    - Content extraction (T5-small, BART-base)
+    - File naming suggestions (GPT-2 small, fine-tuned)
+    - Duplicate detection (SentenceTransformers)
+    - Pattern recognition and analysis
     """
 
     def __init__(self, config: ProviderConfig):
         """Initialize Local SLM provider."""
         super().__init__(config)
-        self.model = None
-        self.tokenizer = None
-        self.pipeline = None
+        self.slm_manager = None
         self._model_loaded = False
 
     async def initialize(self) -> None:
@@ -43,30 +43,39 @@ class LocalSLMProvider(BaseProvider):
         try:
             logger.info("Initializing Local SLM provider", provider_name=self.name)
 
-            # Import transformers in initialize to avoid startup delays
+            # Check for required packages
             try:
-                from transformers import pipeline, AutoTokenizer, AutoModel
+                import transformers
                 import torch
+                import sentence_transformers
 
-                self._transformers_available = True
+                self._dependencies_available = True
             except ImportError as e:
                 raise OCDProviderError(
-                    "Transformers library not available. Install with: pip install transformers torch",
+                    "Required packages not available. Install with: pip install transformers torch sentence-transformers",
                     provider_name=self.name,
                     cause=e,
                 )
 
-            # Load model configuration
-            model_name = self.config.model_name or "microsoft/DialoGPT-small"
+            # Initialize SLM Model Manager
+            self.slm_manager = SLMModelManager(
+                cache_dir=self.config.cache_dir,
+                max_memory_usage=getattr(
+                    self.config, "max_memory_usage", 2 * 1024 * 1024 * 1024
+                ),
+                idle_timeout=getattr(self.config, "idle_timeout", 300.0),
+                auto_unload=getattr(self.config, "auto_unload", True),
+            )
 
-            # Create pipeline based on task
-            await self._load_models(model_name)
+            await self.slm_manager.initialize()
 
             self._initialized = True
+            self._model_loaded = True
+
             logger.info(
-                "Local SLM provider initialized",
+                "Local SLM provider initialized successfully",
                 provider_name=self.name,
-                model=model_name,
+                supported_models=list(self.slm_manager.get_supported_models().keys()),
             )
 
         except Exception as e:
@@ -111,10 +120,10 @@ class LocalSLMProvider(BaseProvider):
 
     def _check_availability(self) -> bool:
         """Check if the provider is available."""
-        return self._initialized and self._model_loaded and self.pipeline is not None
+        return self._initialized and self._model_loaded and self.slm_manager is not None
 
     async def execute_task(self, request: TaskRequest) -> TaskResponse:
-        """Execute a task using the local SLM."""
+        """Execute a task using specialized SLM models."""
         if not self.is_available:
             raise OCDProviderError(
                 "Local SLM provider not available", provider_name=self.name
@@ -125,10 +134,12 @@ class LocalSLMProvider(BaseProvider):
         start_time = time.time()
 
         try:
-            # Route to specific task handler
+            # Route to specialized SLM handlers
             task_handlers = {
                 "analyze_directory": self._analyze_directory,
                 "classify_files": self._classify_files,
+                "find_similar_files": self._find_similar_files,
+                "find_duplicates": self._find_duplicates,
                 "extract_patterns": self._extract_patterns,
                 "summarize_content": self._summarize_content,
                 "generate_script": self._generate_script,
@@ -136,11 +147,14 @@ class LocalSLMProvider(BaseProvider):
 
             handler = task_handlers.get(request.task_type)
             if not handler:
-                # Fallback to generic text generation
-                handler = self._generate_text
+                # Fallback to classification for unknown tasks
+                handler = self._classify_files
 
             result = await handler(request)
             execution_time = time.time() - start_time
+
+            # Get model status for metadata
+            model_status = self.slm_manager.get_model_status()
 
             return TaskResponse(
                 task_type=request.task_type,
@@ -149,8 +163,10 @@ class LocalSLMProvider(BaseProvider):
                 provider_used=self.name,
                 execution_time=execution_time,
                 metadata={
-                    "model_name": self.config.model_name,
                     "provider_type": "local_slm",
+                    "models_used": list(model_status["models"].keys()),
+                    "total_memory_usage": model_status["total_memory_usage"],
+                    "models_loaded": model_status["loaded_models"],
                 },
             )
 
@@ -202,37 +218,53 @@ class LocalSLMProvider(BaseProvider):
         }
 
     async def _classify_files(self, request: TaskRequest) -> Dict[str, Any]:
-        """Classify files by type and purpose."""
+        """Classify files using specialized classifier SLM."""
         files_info = request.context.get("files", [])
 
-        classifications = {}
-        for file_info in files_info[:20]:  # Limit to avoid token limits
-            prompt = f"""
-            Classify this file:
-            Name: {file_info.get('name', 'unknown')}
-            Type: {file_info.get('file_type', 'unknown')}
-            Size: {file_info.get('size', 0)} bytes
-            
-            Classification categories:
-            - source_code
-            - documentation
-            - configuration
-            - data
-            - media
-            - temporary
-            - other
-            
-            Category:"""
+        if not files_info:
+            return {"classifications": {}, "summary": {}, "error": "No files provided"}
 
-            result = await self._generate_text_internal(prompt, max_length=50)
-            category = result.strip().lower().split()[0] if result else "other"
+        # Use the specialized file classifier
+        try:
+            classifications = await self.slm_manager.batch_classify_files(
+                files_info[:50], batch_size=16  # Process up to 50 files
+            )
 
-            classifications[file_info.get("name", "unknown")] = category
+            # Convert results to expected format
+            file_classifications = {}
+            category_summary = {}
 
-        return {
-            "classifications": classifications,
-            "summary": self._summarize_classifications(classifications),
-        }
+            for i, file_info in enumerate(files_info[: len(classifications)]):
+                file_name = file_info.get("name", f"file_{i}")
+                classification = classifications[i]
+
+                category = classification.get("category", "unknown")
+                confidence = classification.get("confidence", 0.0)
+
+                file_classifications[file_name] = {
+                    "category": category,
+                    "confidence": confidence,
+                    "subcategories": classification.get("subcategories", []),
+                }
+
+                # Update summary
+                category_summary[category] = category_summary.get(category, 0) + 1
+
+            return {
+                "classifications": file_classifications,
+                "summary": category_summary,
+                "total_files": len(files_info),
+                "processed_files": len(classifications),
+                "model_info": "specialized_file_classifier_slm",
+            }
+
+        except Exception as e:
+            logger.error("File classification failed", error=str(e))
+            return {
+                "classifications": {},
+                "summary": {},
+                "error": f"Classification failed: {e}",
+            }
 
     async def _extract_patterns(self, request: TaskRequest) -> Dict[str, Any]:
         """Extract patterns from directory content."""
@@ -255,6 +287,51 @@ class LocalSLMProvider(BaseProvider):
         patterns = self._parse_patterns(result)
 
         return {"patterns": patterns, "analysis": result}
+
+    async def _find_similar_files(self, request: TaskRequest) -> Dict[str, Any]:
+        """Find similar files using specialized similarity SLM."""
+        target_file = request.context.get("target_file")
+        compare_files = request.context.get("compare_files", [])
+
+        if not target_file:
+            return {"error": "No target file specified for similarity search"}
+
+        try:
+            # Use the specialized similarity detector
+            result = await self.slm_manager.find_similar_files(
+                target_file, compare_files=compare_files
+            )
+
+            return {**result, "model_info": "specialized_similarity_detector_slm"}
+
+        except Exception as e:
+            logger.error("Similarity detection failed", error=str(e))
+            return {"error": f"Similarity detection failed: {e}"}
+
+    async def _find_duplicates(self, request: TaskRequest) -> Dict[str, Any]:
+        """Find duplicate files in directory using similarity SLM."""
+        directory_path = request.context.get("directory_path")
+
+        if not directory_path:
+            analysis_result = request.analysis_result
+            if analysis_result:
+                directory_path = analysis_result.directory_info.root_path
+            else:
+                return {"error": "No directory specified for duplicate detection"}
+
+        try:
+            from pathlib import Path
+
+            # Use the specialized duplicate detector
+            result = await self.slm_manager.find_duplicates_in_directory(
+                Path(directory_path)
+            )
+
+            return {**result, "model_info": "specialized_similarity_detector_slm"}
+
+        except Exception as e:
+            logger.error("Duplicate detection failed", error=str(e))
+            return {"error": f"Duplicate detection failed: {e}"}
 
     async def _summarize_content(self, request: TaskRequest) -> Dict[str, Any]:
         """Summarize directory or file content."""
@@ -385,10 +462,11 @@ class LocalSLMProvider(BaseProvider):
         """Clean up model resources."""
         logger.info("Cleaning up Local SLM provider", provider_name=self.name)
 
-        # Clear model references to free memory
-        self.pipeline = None
-        self.model = None
-        self.tokenizer = None
+        # Clean up SLM model manager
+        if self.slm_manager:
+            await self.slm_manager.cleanup()
+            self.slm_manager = None
+
         self._model_loaded = False
 
         # Force garbage collection

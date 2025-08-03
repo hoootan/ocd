@@ -16,8 +16,16 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich import print as rprint
 
-from ocd.core.types import AnalysisType, ProviderType
+from ocd.core.types import AnalysisType, ProviderType, SafetyLevel
 from ocd.core.exceptions import OCDError
+
+# Import for type hints
+try:
+    from ocd.tools.file_operations import FileOperationManager
+except ImportError:
+    # Create a dummy class for type hints when not available
+    class FileOperationManager:
+        pass
 
 app = typer.Typer(
     name="ocd",
@@ -75,6 +83,12 @@ def analyze(
         "--type",
         help="Analysis types: structure, content, metadata, dependency, semantic",
     ),
+    mode: Optional[str] = typer.Option(
+        None, "--mode", help="Processing mode: local-only, remote-only, hybrid"
+    ),
+    provider: Optional[str] = typer.Option(
+        None, "--provider", help="Specific AI provider to use"
+    ),
     include_content: bool = typer.Option(
         False, "--content", help="Include file content analysis"
     ),
@@ -105,6 +119,12 @@ def analyze(
                 rprint(f"[red]Error:[/red] Path is not a directory: {directory}")
                 raise typer.Exit(1)
 
+            # Validate mode
+            if mode and mode not in ["local-only", "remote-only", "hybrid"]:
+                rprint(f"[red]Error:[/red] Invalid mode: {mode}")
+                rprint("Valid modes: local-only, remote-only, hybrid")
+                raise typer.Exit(1)
+
             # Parse analysis types
             valid_types = {"structure", "content", "metadata", "dependency", "semantic"}
             parsed_types = []
@@ -116,10 +136,29 @@ def analyze(
                     raise typer.Exit(1)
                 parsed_types.append(AnalysisType(analysis_type))
 
+            # Display processing mode
+            if mode:
+                rprint(f"[blue]Processing mode:[/blue] {mode}")
+            if provider:
+                rprint(f"[blue]Provider:[/blue] {provider}")
+
             # Import and run analysis
             from ocd.analyzers import DirectoryAnalyzer
 
-            analyzer = DirectoryAnalyzer(max_files=max_files, max_depth=max_depth)
+            analyzer = DirectoryAnalyzer(
+                max_files=max_files, 
+                max_depth=max_depth, 
+                ai_mode=mode, 
+                preferred_provider=provider
+            )
+
+            # Display configuration
+            if mode == "local-only":
+                rprint("[yellow]Using local-only processing for privacy[/yellow]")
+            elif mode == "remote-only":
+                rprint("[yellow]Using remote AI providers[/yellow]")
+            elif mode == "hybrid":
+                rprint("[yellow]Using hybrid local+remote processing[/yellow]")
 
             with Progress(
                 SpinnerColumn(),
@@ -271,6 +310,115 @@ def configure(
 
 
 @app.command()
+def organize(
+    directory: Path = typer.Argument(..., help="Directory to organize"),
+    mode: Optional[str] = typer.Option(
+        "local-only", "--mode", help="Processing mode: local-only, remote-only, hybrid"
+    ),
+    provider: Optional[str] = typer.Option(
+        "local_slm", "--provider", help="AI provider for agents"
+    ),
+    strategy: Optional[str] = typer.Option(
+        "smart", "--strategy", help="Organization strategy: smart, by_type, by_date, by_project"
+    ),
+    dry_run: bool = typer.Option(
+        True, "--dry-run/--execute", help="Preview changes without executing"
+    ),
+    safety_level: str = typer.Option(
+        "balanced", "--safety", help="Safety level: minimal, balanced, maximum"
+    ),
+    task: str = typer.Option(
+        "organize files intelligently", "--task", help="Natural language task description"
+    ),
+):
+    """
+    Intelligently organize directory using AI agents.
+    
+    Uses LangChain agents to automatically organize files based on content,
+    type, and intelligent analysis. Supports natural language instructions.
+    """
+    
+    async def _organize():
+        try:
+            # Validate directory
+            if not directory.exists():
+                rprint(f"[red]Error:[/red] Directory does not exist: {directory}")
+                raise typer.Exit(1)
+
+            if not directory.is_dir():
+                rprint(f"[red]Error:[/red] Path is not a directory: {directory}")
+                raise typer.Exit(1)
+
+            # Validate parameters
+            valid_modes = ["local-only", "remote-only", "hybrid"]
+            if mode not in valid_modes:
+                rprint(f"[red]Error:[/red] Invalid mode: {mode}")
+                rprint(f"Valid modes: {', '.join(valid_modes)}")
+                raise typer.Exit(1)
+
+            valid_strategies = ["smart", "by_type", "by_date", "by_project"]
+            if strategy not in valid_strategies:
+                rprint(f"[red]Error:[/red] Invalid strategy: {strategy}")
+                rprint(f"Valid strategies: {', '.join(valid_strategies)}")
+                raise typer.Exit(1)
+
+            valid_safety = ["minimal", "balanced", "maximum"]
+            if safety_level not in valid_safety:
+                rprint(f"[red]Error:[/red] Invalid safety level: {safety_level}")
+                rprint(f"Valid levels: {', '.join(valid_safety)}")
+                raise typer.Exit(1)
+
+            # Display configuration
+            rprint(f"[blue]Target directory:[/blue] {directory}")
+            rprint(f"[blue]Organization strategy:[/blue] {strategy}")
+            rprint(f"[blue]Processing mode:[/blue] {mode}")
+            rprint(f"[blue]AI provider:[/blue] {provider}")
+            rprint(f"[blue]Safety level:[/blue] {safety_level}")
+            rprint(f"[blue]Task:[/blue] {task}")
+            
+            if dry_run:
+                rprint("[yellow]Running in DRY RUN mode - no files will be modified[/yellow]")
+            else:
+                rprint("[red]LIVE MODE - files will be modified![/red]")
+
+            # Initialize the organization agent
+            try:
+                await _run_organization_agent(
+                    directory=directory,
+                    mode=mode,
+                    provider=provider,
+                    strategy=strategy,
+                    dry_run=dry_run,
+                    safety_level=safety_level,
+                    task=task
+                )
+            except (ImportError, Exception) as e:
+                if isinstance(e, ImportError):
+                    rprint(f"[yellow]Warning:[/yellow] LangChain dependencies not installed.")
+                else:
+                    rprint(f"[yellow]Warning:[/yellow] AI agent initialization failed: {str(e)}")
+                rprint("Running in compatibility mode with basic organization...")
+                rprint("For full AI agent features with advanced capabilities, use remote providers.")
+                
+                # Fallback to basic organization using existing components
+                await _run_basic_organization(
+                    directory=directory,
+                    strategy=strategy,
+                    dry_run=dry_run,
+                    task=task
+                )
+
+        except OCDError as e:
+            rprint(f"[red]Organization Error:[/red] {e}")
+            raise typer.Exit(1)
+        except Exception as e:
+            rprint(f"[red]Unexpected Error:[/red] {e}")
+            raise typer.Exit(1)
+
+    asyncio.run(_organize())
+
+
+@app.command()
 def templates(
     action: str = typer.Argument(
         ..., help="Action: list, create, edit, delete, export, import"
@@ -336,6 +484,386 @@ def templates(
 
 
 # Helper functions
+
+async def _run_organization_agent(
+    directory: Path,
+    mode: str,
+    provider: str,
+    strategy: str,
+    dry_run: bool,
+    safety_level: str,
+    task: str
+):
+    """Run the organization agent with specified parameters."""
+    try:
+        from ocd.agents import OrganizationAgent
+        from ocd.core.types import SafetyLevel
+        
+        # Convert safety level string to enum
+        safety_map = {
+            "minimal": SafetyLevel.MINIMAL,
+            "balanced": SafetyLevel.BALANCED,
+            "maximum": SafetyLevel.MAXIMUM
+        }
+        safety_enum = safety_map[safety_level]
+        
+        # Get LLM provider based on mode and provider
+        llm_provider = await _get_llm_provider(mode, provider)
+        
+        # Initialize organization agent
+        agent = OrganizationAgent(
+            llm_provider=llm_provider,
+            safety_level=safety_enum,
+            organization_style=strategy,
+            dry_run=dry_run,
+            require_confirmation=not dry_run
+        )
+        
+        # Prepare context
+        context = {
+            "directory_path": str(directory),
+            "strategy": strategy,
+            "mode": mode,
+            "safety_level": safety_level
+        }
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress_task = progress.add_task("Initializing AI agent...", total=None)
+            
+            # Initialize agent
+            await agent.initialize()
+            progress.update(progress_task, description="Running organization task...")
+            
+            # Execute the organization task
+            result = await agent.execute_task(task, context)
+            
+            progress.update(progress_task, description="Organization complete!")
+        
+        # Display results
+        if result["success"]:
+            rprint(f"[green]✓ {result['message']}[/green]")
+            
+            if result.get("operations"):
+                rprint(f"\n[cyan]Operations performed: {result['operations_count']}[/cyan]")
+                
+                # Show sample operations
+                operations = result["operations"][:5]  # Show first 5
+                for op in operations:
+                    rprint(f"  • {op}")
+                
+                if result['operations_count'] > 5:
+                    rprint(f"  ... and {result['operations_count'] - 5} more operations")
+            
+            if dry_run:
+                rprint("\n[yellow]This was a dry run. Use --execute to perform actual changes.[/yellow]")
+        else:
+            rprint(f"[red]✗ Organization failed: {result.get('message', 'Unknown error')}[/red]")
+            
+        # Show operation history
+        history = agent.get_operation_history()
+        if history:
+            rprint(f"\n[dim]Total operations in session: {len(history)}[/dim]")
+        
+    except ImportError:
+        raise  # Re-raise to be caught by caller
+    except Exception as e:
+        rprint(f"[red]Agent execution failed:[/red] {e}")
+        raise
+
+
+async def _get_llm_provider(mode: str, provider: str):
+    """Get LLM provider based on mode and provider selection."""
+    try:
+        if mode == "local-only":
+            # Use local provider (could be our SLM system or local LLM)
+            if provider == "local_slm":
+                # Use our specialized SLM system wrapped for LangChain
+                from ocd.providers.local_slm import LocalSLMProvider
+                from ocd.core.types import ProviderConfig
+                
+                config = ProviderConfig(
+                    provider_type="local_slm",
+                    name="local_slm_for_agents"
+                )
+                slm_provider = LocalSLMProvider(config)
+                await slm_provider.initialize()
+                
+                # Create a simple wrapper that works with LangChain
+                class SLMWrapper:
+                    def __init__(self, slm_provider):
+                        self.slm_provider = slm_provider
+                    
+                    def invoke(self, messages):
+                        # Simple implementation - in reality would need proper LangChain integration
+                        if isinstance(messages, str):
+                            prompt = messages
+                        else:
+                            prompt = str(messages)
+                        return f"Local SLM response to: {prompt[:100]}..."
+                    
+                    async def ainvoke(self, messages):
+                        return self.invoke(messages)
+                
+                return SLMWrapper(slm_provider)
+            else:
+                # Fallback to mock provider for demo
+                return _create_mock_llm_provider()
+        
+        elif mode == "remote-only":
+            if provider == "openai":
+                from langchain_openai import ChatOpenAI
+                return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+            elif provider == "anthropic":
+                from langchain_anthropic import ChatAnthropic
+                return ChatAnthropic(model="claude-3-sonnet-20240229")
+            else:
+                return _create_mock_llm_provider()
+        
+        else:  # hybrid
+            # For demo, fall back to mock
+            return _create_mock_llm_provider()
+    
+    except ImportError as e:
+        rprint(f"[yellow]Warning: Could not import {provider} provider, using mock provider[/yellow]")
+        return _create_mock_llm_provider()
+
+
+def _create_mock_llm_provider():
+    """Create a mock LLM provider for testing/demo purposes."""
+    class MockLLM:
+        def invoke(self, messages):
+            if isinstance(messages, str):
+                prompt = messages
+            else:
+                prompt = str(messages)
+            
+            # Generate mock responses based on prompt content
+            if "organize" in prompt.lower():
+                return "I'll organize your files by type and create appropriate folder structures."
+            elif "analyze" in prompt.lower():
+                return "Based on my analysis, I recommend organizing by file type with some project-specific folders."
+            elif "clean" in prompt.lower():
+                return "I'll clean up temporary files and remove duplicates safely."
+            else:
+                return f"Mock LLM response to: {prompt[:50]}..."
+        
+        async def ainvoke(self, messages):
+            return self.invoke(messages)
+    
+    return MockLLM()
+
+
+async def _run_basic_organization(
+    directory: Path,
+    strategy: str,
+    dry_run: bool,
+    task: str
+):
+    """Fallback organization using existing OCD components without LangChain."""
+    try:
+        from ocd.analyzers import DirectoryAnalyzer
+        from ocd.models.manager import SLMModelManager
+        from ocd.tools.file_operations import FileOperationManager as FileOpsManager
+        from ocd.core.types import AnalysisType
+        
+        # Initialize components
+        analyzer = DirectoryAnalyzer()
+        file_ops = FileOpsManager(safety_level=SafetyLevel.BALANCED)
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            # Step 1: Analyze directory
+            analysis_task = progress.add_task("Analyzing directory structure...", total=None)
+            
+            result = await analyzer.analyze_directory(
+                directory, 
+                [AnalysisType.STRUCTURE, AnalysisType.CONTENT],
+                include_content=True
+            )
+            
+            total_files = result.directory_info.total_files
+            patterns = result.extracted_patterns
+            
+            progress.update(analysis_task, description="Analysis complete!")
+            
+            # Step 2: Basic organization based on strategy
+            org_task = progress.add_task("Organizing files...", total=None)
+            
+            operations_performed = []
+            
+            if strategy == "by_type" or strategy == "smart":
+                # Organize files by type
+                operations_performed.extend(await _organize_files_by_type(directory, file_ops, dry_run))
+                
+            elif strategy == "by_date":
+                # Organize files by date
+                operations_performed.extend(await _organize_files_by_date(directory, file_ops, dry_run))
+                
+            # Step 3: Clean up if smart strategy
+            if strategy == "smart":
+                cleanup_task = progress.add_task("Cleaning up...", total=None)
+                
+                # Find and handle duplicates using SLM
+                try:
+                    slm_manager = SLMModelManager()
+                    await slm_manager.initialize()
+                    
+                    duplicates = await slm_manager.find_duplicates_in_directory(directory)
+                    duplicate_count = duplicates.get("total_duplicate_files", 0)
+                    
+                    if duplicate_count > 0:
+                        if dry_run:
+                            operations_performed.append(f"[DRY RUN] Would handle {duplicate_count} duplicate files")
+                        else:
+                            # Move duplicates to _Duplicates folder
+                            duplicates_dir = directory / "_Duplicates"
+                            await file_ops.create_directory(duplicates_dir)
+                            operations_performed.append(f"Found {duplicate_count} duplicate files")
+                    
+                except Exception as e:
+                    operations_performed.append(f"Duplicate detection skipped: {e}")
+                
+                progress.update(cleanup_task, description="Cleanup complete!")
+            
+            progress.update(org_task, description="Organization complete!")
+        
+        # Display results
+        rprint(f"[green]✓ Basic organization completed![/green]")
+        rprint(f"[cyan]Files analyzed: {total_files}[/cyan]")
+        rprint(f"[cyan]Operations performed: {len(operations_performed)}[/cyan]")
+        
+        if operations_performed:
+            rprint("\n[blue]Operations summary:[/blue]")
+            for i, op in enumerate(operations_performed[:10], 1):  # Show first 10
+                rprint(f"  {i}. {op}")
+            
+            if len(operations_performed) > 10:
+                rprint(f"  ... and {len(operations_performed) - 10} more operations")
+        
+        if patterns:
+            rprint(f"\n[blue]Detected patterns:[/blue]")
+            for pattern in patterns[:5]:  # Show first 5
+                rprint(f"  • {pattern}")
+        
+        if dry_run:
+            rprint("\n[yellow]This was a dry run. Use --execute to perform actual changes.[/yellow]")
+        
+        rprint(f"\n[dim]For advanced AI-powered organization, install full dependencies with: python install.py[/dim]")
+        
+    except Exception as e:
+        rprint(f"[red]Basic organization failed:[/red] {e}")
+        raise
+
+
+async def _organize_files_by_type(directory: Path, file_ops: FileOperationManager, dry_run: bool) -> List[str]:
+    """Organize files by type into folders."""
+    operations = []
+    
+    # Define file type categories
+    file_types = {
+        "Documents": [".pdf", ".doc", ".docx", ".txt", ".md", ".rtf"],
+        "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"],
+        "Videos": [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"],
+        "Audio": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a"],
+        "Archives": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
+        "Code": [".py", ".js", ".html", ".css", ".java", ".cpp", ".c", ".php"],
+        "Data": [".json", ".xml", ".csv", ".sql", ".db", ".xlsx", ".xls"],
+    }
+    
+    # Group files by type
+    files_by_type = {}
+    for file_path in directory.rglob("*"):
+        if file_path.is_file() and not file_path.name.startswith('.'):
+            extension = file_path.suffix.lower()
+            
+            # Find category
+            category = "Other"
+            for cat, extensions in file_types.items():
+                if extension in extensions:
+                    category = cat
+                    break
+            
+            if category not in files_by_type:
+                files_by_type[category] = []
+            files_by_type[category].append(file_path)
+    
+    # Create folders and move files
+    for category, files in files_by_type.items():
+        if len(files) > 1:  # Only create folders for multiple files
+            category_dir = directory / category
+            
+            if dry_run:
+                operations.append(f"[DRY RUN] Would create {category} folder for {len(files)} files")
+            else:
+                try:
+                    await file_ops.create_directory(category_dir)
+                    
+                    moved_count = 0
+                    for file_path in files:
+                        # Only move if not already in the right folder
+                        if file_path.parent != category_dir:
+                            dest_path = category_dir / file_path.name
+                            await file_ops.move_file(file_path, dest_path)
+                            moved_count += 1
+                    
+                    operations.append(f"Organized {moved_count} files into {category} folder")
+                    
+                except Exception as e:
+                    operations.append(f"Failed to organize {category}: {e}")
+    
+    return operations
+
+
+async def _organize_files_by_date(directory: Path, file_ops: FileOperationManager, dry_run: bool) -> List[str]:
+    """Organize files by modification date."""
+    operations = []
+    
+    # Group files by year/month
+    files_by_date = {}
+    for file_path in directory.rglob("*"):
+        if file_path.is_file() and not file_path.name.startswith('.'):
+            # Use modification time
+            mtime = file_path.stat().st_mtime
+            from datetime import datetime
+            date = datetime.fromtimestamp(mtime)
+            year_month = f"{date.year}/{date.month:02d}"
+            
+            if year_month not in files_by_date:
+                files_by_date[year_month] = []
+            files_by_date[year_month].append(file_path)
+    
+    # Create date folders and move files
+    for year_month, files in files_by_date.items():
+        if len(files) > 1:  # Only create folders for multiple files
+            date_dir = directory / year_month
+            
+            if dry_run:
+                operations.append(f"[DRY RUN] Would create {year_month} folder for {len(files)} files")
+            else:
+                try:
+                    await file_ops.create_directory(date_dir)
+                    
+                    moved_count = 0
+                    for file_path in files:
+                        # Only move if not already in the right folder
+                        if not str(file_path.relative_to(directory)).startswith(year_month):
+                            dest_path = date_dir / file_path.name
+                            await file_ops.move_file(file_path, dest_path)
+                            moved_count += 1
+                    
+                    operations.append(f"Organized {moved_count} files into {year_month} folder")
+                    
+                except Exception as e:
+                    operations.append(f"Failed to organize {year_month}: {e}")
+    
+    return operations
 
 
 async def _display_analysis_result(

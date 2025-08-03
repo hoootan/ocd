@@ -38,6 +38,8 @@ class DirectoryAnalyzer:
         max_depth: int = 10,
         excluded_dirs: Optional[Set[str]] = None,
         excluded_extensions: Optional[Set[str]] = None,
+        ai_mode: Optional[str] = None,
+        preferred_provider: Optional[str] = None,
     ):
         """
         Initialize directory analyzer.
@@ -48,10 +50,14 @@ class DirectoryAnalyzer:
             max_depth: Maximum directory depth to traverse
             excluded_dirs: Directory names to exclude
             excluded_extensions: File extensions to exclude
+            ai_mode: AI processing mode (local-only, remote-only, hybrid)
+            preferred_provider: Preferred AI provider to use
         """
         self.max_files = max_files
         self.max_file_size = max_file_size
         self.max_depth = max_depth
+        self.ai_mode = ai_mode
+        self.preferred_provider = preferred_provider
 
         self.excluded_dirs = excluded_dirs or {
             ".git",

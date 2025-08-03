@@ -60,10 +60,21 @@ class ScriptLanguage(str, Enum):
 class SafetyLevel(str, Enum):
     """Safety validation levels."""
 
-    PERMISSIVE = "permissive"  # Minimal validation
+    MINIMAL = "minimal"  # Minimal validation
     BALANCED = "balanced"  # Standard validation
-    STRICT = "strict"  # High validation, block critical
-    PARANOID = "paranoid"  # Maximum validation, block high+
+    MAXIMUM = "maximum"  # Maximum validation, block high+
+
+
+class OperationPreview(BaseModel):
+    """Preview of a file operation before execution."""
+    
+    operation_type: str
+    description: str
+    source_path: Optional[str] = None
+    destination_path: Optional[str] = None
+    conflicts: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    safety_checks: List[str] = Field(default_factory=list)
 
 
 class FileInfo(BaseModel):
@@ -218,6 +229,7 @@ class ProviderConfig(BaseModel):
     timeout_seconds: Optional[float] = None
     rate_limit: Optional[int] = None
     enabled: bool = True
+    cache_dir: Optional[str] = None
     fallback_providers: List[str] = Field(default_factory=list)
     custom_config: Dict[str, Any] = Field(default_factory=dict)
 

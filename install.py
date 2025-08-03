@@ -159,9 +159,9 @@ class OCDInstaller:
         if dev:
             extras.append("dev")
         if local_only:
-            extras.append("local")
+            extras.extend(["local", "agents"])  # Include agents for local-only
         else:
-            extras.append("ai")
+            extras.extend(["ai", "agents"])  # Include agents for full installation
             
         if extras:
             try:

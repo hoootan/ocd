@@ -179,3 +179,22 @@ class OCDPermissionError(OCDError):
             context["required_permission"] = required_permission
 
         super().__init__(message, context, kwargs.get("cause"))
+
+
+class OCDModelError(OCDError):
+    """Raised when SLM model operations fail."""
+
+    def __init__(
+        self,
+        message: str,
+        model_name: Optional[str] = None,
+        model_type: Optional[str] = None,
+        **kwargs,
+    ):
+        context = kwargs.get("context", {})
+        if model_name:
+            context["model_name"] = model_name
+        if model_type:
+            context["model_type"] = model_type
+
+        super().__init__(message, context, kwargs.get("cause"))

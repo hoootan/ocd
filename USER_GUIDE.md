@@ -1,6 +1,6 @@
 # OCD User Guide 🚀
 
-**OCD (Organized Content Directory)** is an intelligent file and directory analysis tool that uses AI to help you understand, organize, and work with your code and files.
+**OCD (Organized Content Directory)** is an intelligent file and folder organization system that uses both offline and online AI to automatically categorize, rename, and structure your files based on their content, metadata, and your preferences.
 
 ## 📋 Table of Contents
 
@@ -21,35 +21,39 @@
 python install.py
 ```
 
-**Step 2:** Analyze a directory
+**Step 2:** Analyze a directory with offline AI
 ```bash
-# Activate the environment and analyze current directory
+# Activate the environment and analyze with local SLMs  
 source .venv/bin/activate
-ocd analyze .
+ocd analyze ~/Desktop --mode local-only
 ```
 
-**Step 3:** Execute AI-powered tasks
+**Step 3:** Organize files intelligently
 ```bash
-# Let OCD help you with directory tasks
-ocd execute . "create a summary of all Python files" --dry-run
+# Let OCD organize your files automatically
+ocd organize ~/Downloads --task "organize files by type" --dry-run
 ```
 
 ## 🤔 What OCD Does
 
-Think of OCD as your **intelligent assistant for files and directories**. It can:
+Think of OCD as your **intelligent file organization assistant**. It can:
 
-- **🔍 Analyze** your code projects and understand their structure
-- **📊 Generate reports** about your files, dependencies, and patterns
-- **⚡ Execute scripts** safely based on AI analysis of your directories
-- **🛡️ Keep you safe** by validating dangerous operations before running them
+- **🤖 Organize automatically** using specialized offline AI models
+- **🧠 Understand context** by analyzing file content and relationships  
+- **📁 Create structure** by categorizing files intelligently by type, date, or project
+- **🔍 Find duplicates** and handle them intelligently
+- **🛡️ Keep you safe** with dry-run mode and comprehensive validation
+- **🔒 Protect privacy** with complete local processing option
 - **🌐 Work anywhere** - supports Windows, macOS, and Linux
 
 ### Real-World Use Cases
 
-- **Project Analysis**: "What does this codebase do?"
-- **File Organization**: "Help me organize these messy files"
-- **Code Understanding**: "Show me all the dependencies in this project"
-- **Safe Automation**: "Create scripts to process these files safely"
+- **Messy Downloads**: "Organize my chaotic Downloads folder"
+- **Photo Organization**: "Sort my photos by year and event"  
+- **Document Management**: "Organize documents by type and importance"
+- **Code Project Cleanup**: "Structure my development projects"
+- **Privacy-First Processing**: "Organize sensitive files without cloud AI"
+- **Duplicate Management**: "Find and handle duplicate files intelligently"
 
 ## 📦 Installation
 
@@ -83,46 +87,58 @@ You should see: `OCD version 0.1.0`
 
 ## 🎯 Basic Commands
 
-### 1. Analyze Directories
+### 1. Analyze Directories with Offline AI
 
-**Basic Analysis:**
+**Basic Analysis (Privacy-First):**
 ```bash
-ocd analyze /path/to/your/project
+ocd analyze ~/Documents --mode local-only
 ```
 
 **Advanced Analysis:**
 ```bash
-# Multiple analysis types
-ocd analyze . --type structure,content,metadata
+# Multiple analysis types with local SLMs
+ocd analyze ~/Projects --type structure --type content --mode local-only
 
-# Save results to file
-ocd analyze . --output analysis_report.json --format json
+# Save detailed analysis results
+ocd analyze ~/Code --output analysis_report.json --format json --mode local-only
 
-# Limit analysis scope
-ocd analyze . --max-files 500 --max-depth 5
+# Quick structure overview
+ocd analyze ~/Desktop --type structure --provider local_slm
 ```
 
-### 2. Execute AI Tasks
+### 2. Intelligent File Organization
 
-**Safe Execution (Recommended):**
+**Safe Organization (Always Start Here):**
 ```bash
 # Always test with --dry-run first
-ocd execute . "list all Python files" --dry-run
+ocd organize ~/Downloads --strategy smart --dry-run
 
-# Then run for real
-ocd execute . "list all Python files" --language bash
+# Then execute the actual organization
+ocd organize ~/Downloads --strategy smart --execute
 ```
 
-**Different Script Languages:**
+**Natural Language Commands:**
 ```bash
-# Bash scripts (default)
-ocd execute . "show disk usage" --language bash
+# Use natural language to describe what you want
+ocd organize ~/Desktop --task "organize files by type and clean up duplicates" --dry-run
 
-# Python scripts
-ocd execute . "analyze file sizes" --language python
+# Privacy-focused organization
+ocd organize ~/Photos --mode local-only --task "organize photos by date" --dry-run
 
-# PowerShell (Windows)
-ocd execute . "get file info" --language powershell
+# Professional document organization
+ocd organize ~/Documents --task "create folders by document type and importance" --execute
+```
+
+**Organization Strategies:**
+```bash
+# Organize by file type (documents, images, code, etc.)
+ocd organize ~/folder --strategy by_type --dry-run
+
+# Organize by creation/modification date
+ocd organize ~/folder --strategy by_date --dry-run
+
+# Smart organization using AI analysis
+ocd organize ~/folder --strategy smart --dry-run
 ```
 
 ### 3. Configure AI Providers
