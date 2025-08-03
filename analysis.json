@@ -1,0 +1,446 @@
+{
+  "directory_info": {
+    "root_path": ".",
+    "total_files": 38,
+    "total_size": 241249,
+    "files": [
+      {
+        "path": ".DS_Store",
+        "name": ".DS_Store",
+        "size": 6148,
+        "modified": "2025-08-02 02:03:54.528825",
+        "file_type": "no_extension",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "pyproject.toml",
+        "name": "pyproject.toml",
+        "size": 3919,
+        "modified": "2025-08-03 11:08:20.074097",
+        "file_type": ".toml",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "README.md",
+        "name": "README.md",
+        "size": 4919,
+        "modified": "2025-08-03 11:27:22.052167",
+        "file_type": ".md",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": ".gitignore",
+        "name": ".gitignore",
+        "size": 3707,
+        "modified": "2025-08-02 01:47:47.838846",
+        "file_type": "no_extension",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "install.py",
+        "name": "install.py",
+        "size": 12468,
+        "modified": "2025-08-03 11:25:01.381925",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "755"
+      },
+      {
+        "path": "CLAUDE.md",
+        "name": "CLAUDE.md",
+        "size": 18831,
+        "modified": "2025-08-03 11:00:22.186419",
+        "file_type": ".md",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "name": "settings.local.json",
+        "size": 292,
+        "modified": "2025-08-03 11:13:36.030132",
+        "file_type": ".json",
+        "mime_type": "application/json",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/PKG-INFO",
+        "name": "PKG-INFO",
+        "size": 2630,
+        "modified": "2025-08-03 11:25:10.417837",
+        "file_type": "no_extension",
+        "mime_type": null,
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/SOURCES.txt",
+        "name": "SOURCES.txt",
+        "size": 841,
+        "modified": "2025-08-03 11:25:10.422098",
+        "file_type": ".txt",
+        "mime_type": "text/plain",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/entry_points.txt",
+        "name": "entry_points.txt",
+        "size": 37,
+        "modified": "2025-08-03 11:25:10.418169",
+        "file_type": ".txt",
+        "mime_type": "text/plain",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/requires.txt",
+        "name": "requires.txt",
+        "size": 641,
+        "modified": "2025-08-03 11:25:10.418986",
+        "file_type": ".txt",
+        "mime_type": "text/plain",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/top_level.txt",
+        "name": "top_level.txt",
+        "size": 4,
+        "modified": "2025-08-03 11:25:10.419055",
+        "file_type": ".txt",
+        "mime_type": "text/plain",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd.egg-info/dependency_links.txt",
+        "name": "dependency_links.txt",
+        "size": 1,
+        "modified": "2025-08-03 11:25:10.418025",
+        "file_type": ".txt",
+        "mime_type": "text/plain",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/__init__.py",
+        "name": "__init__.py",
+        "size": 887,
+        "modified": "2025-08-03 11:13:45.165869",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/cli.py",
+        "name": "cli.py",
+        "size": 18300,
+        "modified": "2025-08-03 11:24:37.443938",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/analyzers/metadata.py",
+        "name": "metadata.py",
+        "size": 14713,
+        "modified": "2025-08-03 11:21:31.580557",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/analyzers/__init__.py",
+        "name": "__init__.py",
+        "size": 403,
+        "modified": "2025-08-03 11:18:52.201031",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/analyzers/content.py",
+        "name": "content.py",
+        "size": 13581,
+        "modified": "2025-08-03 11:20:43.832892",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/analyzers/directory.py",
+        "name": "directory.py",
+        "size": 20281,
+        "modified": "2025-08-03 11:19:57.448742",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/core/__init__.py",
+        "name": "__init__.py",
+        "size": 335,
+        "modified": "2025-08-03 11:13:53.246685",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/core/types.py",
+        "name": "types.py",
+        "size": 6018,
+        "modified": "2025-08-03 11:14:37.175130",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/core/exceptions.py",
+        "name": "exceptions.py",
+        "size": 5202,
+        "modified": "2025-08-03 11:14:11.071380",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/config/__init__.py",
+        "name": "__init__.py",
+        "size": 305,
+        "modified": "2025-08-03 11:26:00.189988",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/config/settings.py",
+        "name": "settings.py",
+        "size": 4287,
+        "modified": "2025-08-03 11:26:19.521755",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/config/manager.py",
+        "name": "manager.py",
+        "size": 10536,
+        "modified": "2025-08-03 11:26:55.769525",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/local_slm.py",
+        "name": "local_slm.py",
+        "size": 13808,
+        "modified": "2025-08-03 11:16:35.042986",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/registry.py",
+        "name": "registry.py",
+        "size": 851,
+        "modified": "2025-08-03 11:17:39.952018",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/__init__.py",
+        "name": "__init__.py",
+        "size": 363,
+        "modified": "2025-08-03 11:14:50.052258",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/remote_api.py",
+        "name": "remote_api.py",
+        "size": 17062,
+        "modified": "2025-08-03 11:17:33.309223",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/manager.py",
+        "name": "manager.py",
+        "size": 10943,
+        "modified": "2025-08-03 11:15:47.553414",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/providers/base.py",
+        "name": "base.py",
+        "size": 5840,
+        "modified": "2025-08-03 11:15:11.561369",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/executors/__init__.py",
+        "name": "__init__.py",
+        "size": 0,
+        "modified": "2025-08-03 11:24:45.757257",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/prompts/__init__.py",
+        "name": "__init__.py",
+        "size": 308,
+        "modified": "2025-08-03 11:21:46.946715",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/prompts/templates.py",
+        "name": "templates.py",
+        "size": 13440,
+        "modified": "2025-08-03 11:23:22.878512",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/prompts/engine.py",
+        "name": "engine.py",
+        "size": 15768,
+        "modified": "2025-08-03 11:22:41.819695",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/credentials/store.py",
+        "name": "store.py",
+        "size": 1738,
+        "modified": "2025-08-03 11:18:38.170969",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/credentials/__init__.py",
+        "name": "__init__.py",
+        "size": 438,
+        "modified": "2025-08-03 11:17:53.006502",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      },
+      {
+        "path": "src/ocd/credentials/manager.py",
+        "name": "manager.py",
+        "size": 11404,
+        "modified": "2025-08-03 11:18:29.436485",
+        "file_type": ".py",
+        "mime_type": "text/x-python",
+        "encoding": null,
+        "permissions": "644"
+      }
+    ],
+    "subdirectories": [
+      "config",
+      "tests",
+      ".claude",
+      "requirements",
+      "docs",
+      "scripts",
+      "src",
+      "src/ocd.egg-info",
+      "src/ocd",
+      "src/ocd/analyzers",
+      "src/ocd/core",
+      "src/ocd/config",
+      "src/ocd/providers",
+      "src/ocd/executors",
+      "src/ocd/prompts",
+      "src/ocd/credentials"
+    ],
+    "depth": 3,
+    "analyzed_at": "2025-08-03 11:27:36.850283"
+  },
+  "analysis_type": "structure",
+  "content_summary": null,
+  "extracted_patterns": [
+    "Uses hyphen-separated naming",
+    "Uses underscore-separated naming",
+    "Contains uppercase file names",
+    "Standard project structure: scripts, tests, src, docs, config",
+    "Many very small files (possibly generated)"
+  ],
+  "dependencies": [],
+  "recommendations": [],
+  "metadata": {
+    "file_type_distribution": {
+      "no_extension": 3,
+      ".toml": 1,
+      ".md": 2,
+      ".py": 26,
+      ".json": 1,
+      ".txt": 5
+    },
+    "depth_distribution": {
+      "0": 6,
+      "1": 1,
+      "2": 8,
+      "3": 23
+    },
+    "total_subdirectories": 16,
+    "oldest_file": "2025-08-02T01:47:47.838846",
+    "newest_file": "2025-08-03T11:27:22.052167",
+    "timespan_days": 1,
+    "average_file_size": 6348.6578947368425,
+    "largest_file_size": 20281,
+    "smallest_file_size": 0
+  },
+  "provider_used": null,
+  "analysis_duration": 0.002039194107055664,
+  "confidence_score": null
+}
